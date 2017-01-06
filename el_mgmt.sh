@@ -158,6 +158,32 @@ echo "ansible-playbook --limit \"$nodes\" --limit \"$groups\" --tag list"
 return
 }
 
+run_replace ()
+{
+local _node
+local _run_img
+local _count_img=0
+declare -A array_run_dockers
+echo "ansible-playbook --tag list -a \"running_image=$previous_image\""
+# supposed format:
+# node1: container_name
+cat replace_search_out | while IFS=: read _node _run_img; do
+array_run_dockers[$_node]="${array_run_dockers[$_node]} $_run_img"
+echo $_node
+echo $_run_img
+_count_img=$(($_count_img+1))
+done
+
+echo $_count_img
+for i in "${!array_run_dockers[@]}"
+do
+echo "key: $i"
+echo "value: ${array_run_dockers[$i]}"
+done
+
+return
+}
+
 key="$1"
 
 case $key in
@@ -179,6 +205,7 @@ case $key in
 	replace)
 	shift
 	f_replace $@
+	run_replace
 	;;
 	help)
 	help
