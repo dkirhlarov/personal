@@ -140,7 +140,11 @@ fi
 return
 }
 
-[ $# -le 3 ] && help && exit 1
+run_start ()
+{
+echo "ansible-playbook --limit \"$nodes\" --limit \"$groups\" --tag start -a \"docker=$docker\" -a \"image=$image\" -a \"config=$config\" -a \"options="$options"\""
+return
+}
 
 key="$1"
 
@@ -148,6 +152,7 @@ case $key in
 	start)
 	shift
 	f_start $@
+	run_start
 	;;
 	stop)
 	shift
