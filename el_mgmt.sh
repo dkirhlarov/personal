@@ -146,6 +146,18 @@ echo "ansible-playbook --limit \"$nodes\" --limit \"$groups\" --tag start -a \"d
 return
 }
 
+run_stop ()
+{
+echo "ansible-playbook --limit \"$nodes\" --limit \"$groups\" --tag stop -a \"docker=$docker\""
+return
+}
+
+run_list ()
+{
+echo "ansible-playbook --limit \"$nodes\" --limit \"$groups\" --tag list"
+return
+}
+
 key="$1"
 
 case $key in
@@ -157,10 +169,12 @@ case $key in
 	stop)
 	shift
 	f_stop $@
+	run_stop
 	;;
 	list)
 	shift
 	f_list $@
+	run_list
 	;;
 	replace)
 	shift
