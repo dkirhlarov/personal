@@ -142,19 +142,25 @@ return
 
 run_start ()
 {
-echo "ansible-playbook --limit \"$nodes\" --limit \"$groups\" --tag start -a \"docker=$docker\" -a \"image=$image\" -a \"config=$config\" -a \"options="$options"\""
+[ -n "$nodes" ] && _limit=" --limit \"$nodes\""
+[ -n "$groups" ] && _limit="$_limit --limit \"$groups\""
+echo "ansible-playbook $_limit -tag start -a \"docker=$docker\" -a \"image=$image\" -a \"config=$config\" -a \"options="$options"\""
 return
 }
 
 run_stop ()
 {
-echo "ansible-playbook --limit \"$nodes\" --limit \"$groups\" --tag stop -a \"docker=$docker\""
+[ -n "$nodes" ] && _limit=" --limit \"$nodes\""
+[ -n "$groups" ] && _limit="$_limit --limit \"$groups\""
+echo "ansible-playbook $_limit --tag stop -a \"docker=$docker\""
 return
 }
 
 run_list ()
 {
-echo "ansible-playbook --limit \"$nodes\" --limit \"$groups\" --tag list"
+[ -n "$nodes" ] && _limit=" --limit \"$nodes\""
+[ -n "$groups" ] && _limit="$_limit --limit \"$groups\""
+echo "ansible-playbook $_limit --tag list"
 return
 }
 
