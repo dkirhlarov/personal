@@ -166,22 +166,41 @@ declare -A array_run_dockers
 echo "ansible-playbook --tag list -a \"running_image=$previous_image\""
 # supposed format:
 # node1: container_name
-# while in subshell http://mywiki.wooledge.org/BashFAQ/024
+# while cicle runs in subshell http://mywiki.wooledge.org/BashFAQ/024
 # test output from file:
 cat replace_search_out |
 {
 while IFS=: read _node _run_img; do
-array_run_dockers[$_node]="${array_run_dockers[$_node]} $_run_img"
-_count_img=$(($_count_img+1))
-echo "${!array_run_dockers[@]}"
+	array_run_dockers[$_node]="${array_run_dockers[$_node]} $_run_img"
+	_count_img=$(($_count_img+1))
 done
 
-echo "array: ${!array_run_dockers[@]}"
-echo "counter: $_count_img"
-for i in "${!array_run_dockers[@]}"
-do
-echo "key: $i"
-echo "value: ${array_run_dockers[$i]}"
+quant=${quant:-1} # If $quant undefined, it will be =1
+
+for _i in "${!array_run_dockers[@]}"; do
+	echo "key: $_i"
+	echo "value: ${array_run_dockers[$_i]}"
+
+	IFS=' ' read -a array_restart_dockers <<< ${array_run_dockers[$_i]}
+#	echo "array_restart_dockers count ${#array_restart_dockers[@]}"
+#	echo "array_restart_dockers elements ${array_restart_dockers[@]}"
+
+	_quant="0"
+	for _j in "${!array_restart_dockers[@]}"; do
+		[ -z "${_ans_dockers}" ] && _ans_dockers="${array_restart_dockers[$_j]}" || _ans_dockers="${_ans_dockers},${array_restart_dockers[$_j]}"
+		_count_img=$(($_count_img-1))
+		_quant=$(($_quant+1))
+		if [ "$_quant" -ge "$(($quant))" -o "$_j" -eq "$((${#array_restart_dockers[@]}-1))" ]; then
+			nodes=$_i
+			docker=$_ans_dockers
+			_quant="0"
+			_ans_dockers=""
+			echo "curl -XGET 'http://es-node:9200/_cluster/health?wait_for_status=green&timeout=50s'"
+			run_stop 
+			run_start 
+		fi
+	done
+	echo
 done
 }
 
@@ -220,15 +239,5 @@ case $key in
 	exit 1
 	;;
 esac
-
-echo "
-nodes=$nodes
-groups=$groups
-docker=$docker
-image=$image
-config=$config
-options=$options
-previous_image=$previous_image
-quant=$quant"
 
 exit
