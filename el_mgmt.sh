@@ -215,7 +215,7 @@ return
 
 ##################################################################
 
-WRK_DIR="${ANSIBLE_DIR:=~/git/ansible/}/`basename ${0}`"
+WRK_DIR="${ANSIBLE_DIR:=~/git/ansible}/`basename ${0}`"
 echo $WRK_DIR
 
 key="$1"
