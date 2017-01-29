@@ -5,10 +5,10 @@
 help ()
 {
 echo "Elastic Search management interface. Usage:
-$0 start (-n node1[,...] | -g group1[,...]) -d [0-9] -i image -c config [-o options,for,docker]
+$0 start (-n node1[,...] | -g group1[,...]) -d [0-9] -i image -c config
 $0 stop (-n node1[,...] | -g group1[,...]) -d [0-9]
 $0 list (-n node1[,...] | -g group1[,...])
-$0 replace -p previous_image -i new_image -c config [-o options,for,docker] [-q [0-9]]
+$0 replace -p previous_image -i new_image -c config [-q [0-9]]
 Where
 -n	node name
 -g	you can use predefined groups of nodes instead list of nodes (-n)
@@ -22,7 +22,7 @@ Where
 
 f_start ()
 {
-while getopts "n:g:d:i:c:o:" opt
+while getopts "n:g:d:i:c:" opt
 do
 case $opt in
 n)
@@ -39,9 +39,6 @@ image=$OPTARG
 ;;
 c)
 config=$OPTARG
-;;
-o)
-options=$OPTARG
 ;;
 *)
 help
@@ -142,25 +139,25 @@ return
 
 run_start ()
 {
-[ -n "$nodes" ] && _limit=" --limit \"$nodes\""
+[ -n "$nodes" ] && _limit="--limit \"$nodes\""
 [ -n "$groups" ] && _limit="$_limit --limit \"$groups\""
-echo "ansible-playbook $_limit -tag start -a \"docker=$docker\" -a \"image=$image\" -a \"config=$config\" -a \"options="$options"\""
+echo "ansible-playbook $WRK_DIR/lib/start.yml $_limit -e \"docker=$docker image=$image config=$config"
 return
 }
 
 run_stop ()
 {
-[ -n "$nodes" ] && _limit=" --limit \"$nodes\""
+[ -n "$nodes" ] && _limit="--limit \"$nodes\""
 [ -n "$groups" ] && _limit="$_limit --limit \"$groups\""
-echo "ansible-playbook $_limit --tag stop -a \"docker=$docker\""
+echo "ansible-playbook $WRK_DIR/lib/stop.yml $_limit -e \"docker=$docker\""
 return
 }
 
 run_list ()
 {
-[ -n "$nodes" ] && _limit=" --limit \"$nodes\""
+[ -n "$nodes" ] && _limit="--limit \"$nodes\""
 [ -n "$groups" ] && _limit="$_limit --limit \"$groups\""
-echo "ansible-playbook $_limit --tag list"
+echo "ansible-playbook $WRK_DIR/lib/list.yml $_limit"
 return
 }
 
@@ -169,7 +166,7 @@ run_replace ()
 local _node
 local _run_img
 declare -A array_run_dockers
-echo "ansible-playbook --tag list -a \"running_image=$previous_image\""
+echo "ansible-playbook $WRK_DIR/lib/list.yml $_limit -e running_image=$previous_image"
 # supposed format:
 # node1: container_name
 # while cicle runs in subshell http://mywiki.wooledge.org/BashFAQ/024
@@ -215,7 +212,7 @@ return
 
 ##################################################################
 
-WRK_DIR="${ANSIBLE_DIR:=~/git/ansible/}/`basename ${0}`"
+WRK_DIR="${ANSIBLE_DIR:=~/git/ansible}/`basename ${0}`"
 echo $WRK_DIR
 
 key="$1"
